@@ -24,3 +24,9 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+@media print {
+  .print\:hidden { display: none !important; }
+  .print\:block { display: block !important; }
+  .print\:page-break-before-always { page-break-before: always; }
+  .print\:mt-0 { margin-top: 0 !important; }
+}
