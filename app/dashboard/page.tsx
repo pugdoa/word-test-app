@@ -101,6 +101,21 @@ export default function Dashboard() {
     setSaving(false)
   }
 
+  const handleRename = async (id: string, currentName: string) => {
+  const newName = prompt('新しい名前を入力してください', currentName)
+  if (!newName || !newName.trim()) return
+  const { error } = await supabase
+    .from('wordbooks')
+    .update({ name: newName.trim() })
+    .eq('id', id)
+  if (error) {
+    setMessage('名前の変更に失敗しました。')
+  } else {
+    setMessage(`「${newName.trim()}」に変更しました。`)
+    fetchWordbooks()
+  }
+}
+
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`「${name}」を削除しますか？`)) return
     await supabase.from('wordbooks').delete().eq('id', id)
@@ -194,21 +209,32 @@ export default function Dashboard() {
                     {new Date(wb.created_at).toLocaleDateString('ja-JP')}
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => router.push(`/test?wordbookId=${wb.id}&wordbookName=${encodeURIComponent(wb.name)}`)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold"
-                  >
-                    テストを作成
-                  </button>
-                  <button
-                    onClick={() => handleDelete(wb.id, wb.name)}
-                    className="bg-red-100 hover:bg-red-200 text-red-600 px-4 py-2 rounded-lg text-sm"
-                  >
-                    削除
-                  </button>
-                </div>
-              </div>
+<div className="flex gap-2">
+  <button
+  onClick={() => router.push(`/wordbook/${wb.id}`)}
+  className="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg text-sm"
+>
+  編集
+</button>
+  <button
+    onClick={() => router.push(`/test?wordbookId=${wb.id}&wordbookName=${encodeURIComponent(wb.name)}`)}
+    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold"
+  >
+    テストを作成
+  </button>
+  <button
+    onClick={() => handleRename(wb.id, wb.name)}
+    className="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-4 py-2 rounded-lg text-sm"
+  >
+    名前変更
+  </button>
+  <button
+    onClick={() => handleDelete(wb.id, wb.name)}
+    className="bg-red-100 hover:bg-red-200 text-red-600 px-4 py-2 rounded-lg text-sm"
+  >
+    削除
+  </button>
+</div>              </div>
             ))}
           </div>
         )}
