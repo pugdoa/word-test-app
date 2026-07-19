@@ -209,13 +209,17 @@ function TestPage() {
               >
                 解答用紙
               </button>
-              <button
-                onClick={handlePrint}
-                className="ml-auto bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg text-sm font-semibold"
-              >
-                問題用紙・解答用紙を印刷する
-              </button>
-            </div>
+<div className="ml-auto flex flex-col items-end gap-1">
+  <button
+    onClick={handlePrint}
+    className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg text-sm font-semibold"
+  >
+    問題用紙・解答用紙を印刷する
+  </button>
+  <p className="text-xs text-gray-400">
+    ※印刷時は「ヘッダーとフッター」のチェックを外してください
+  </p>
+</div>            </div>
 
             {/* 問題用紙 */}
             <div className={`bg-white rounded-lg shadow-sm p-8 ${activeTab !== 'test' ? 'hidden print:block' : ''}`}>
