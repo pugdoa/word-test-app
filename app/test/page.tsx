@@ -8,7 +8,9 @@ type Word = {
   id: string
   sort_order: number
   word: string
-  meaning: string
+  main_meaning: string
+  other_meanings: string | null
+  meaning_count: number | null
 }
 
 function TestPage() {
@@ -34,7 +36,7 @@ function TestPage() {
       if (!user) { router.push('/'); return }
       supabase
         .from('words')
-        .select('id, sort_order, word, meaning')
+        .select('id, sort_order, word, main_meaning, other_meanings, meaning_count')
         .eq('wordbook_id', wordbookId)
         .order('sort_order', { ascending: true })
         .then(({ data }) => {
@@ -93,8 +95,11 @@ function TestPage() {
     setMessage(msg)
   }
 
-  const handlePrint = () => {
-    window.print()
+  const formatMeaning = (word: Word) => {
+    let text = word.main_meaning
+    if (word.other_meanings) text += ` / ${word.other_meanings}`
+    if (word.meaning_count) text += ` (${word.meaning_count})`
+    return text
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>
@@ -157,7 +162,7 @@ function TestPage() {
                 type="text"
                 value={dateInput}
                 onChange={(e) => setDateInput(e.target.value)}
-                placeholder="例: 7/18"
+                placeholder="例: 7/26"
                 className="w-full border rounded-lg px-4 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
               />
             </div>
@@ -209,17 +214,18 @@ function TestPage() {
               >
                 解答用紙
               </button>
-<div className="ml-auto flex flex-col items-end gap-1">
-  <button
-    onClick={handlePrint}
-    className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg text-sm font-semibold"
-  >
-    問題用紙・解答用紙を印刷する
-  </button>
-  <p className="text-xs text-gray-400">
-    ※印刷時は「ヘッダーとフッター」のチェックを外してください
-  </p>
-</div>            </div>
+              <div className="ml-auto flex flex-col items-end gap-1">
+                <button
+                  onClick={() => window.print()}
+                  className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg text-sm font-semibold"
+                >
+                  問題用紙・解答用紙を印刷する
+                </button>
+                <p className="text-xs text-gray-400">
+                  ※印刷時は「ヘッダーとフッター」のチェックを外してください
+                </p>
+              </div>
+            </div>
 
             {/* 問題用紙 */}
             <div className={`bg-white rounded-lg shadow-sm p-8 ${activeTab !== 'test' ? 'hidden print:block' : ''}`}>
@@ -232,12 +238,14 @@ function TestPage() {
               </div>
               <div className="grid grid-cols-2 gap-x-8">
                 {currentSet.map((item, i) => (
-                  <div key={item.id} className="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-300">
-                    <span className="text-gray-400 w-8 text-sm">{i + 1}.</span>
-                    <span className="font-semibold text-gray-900 w-28">{item.word}</span>
-                    <span className="flex-1 border-b border-gray-400"></span>
-                  </div>
-                ))}
+<div key={item.id} className="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-300">
+  <span className="text-gray-400 w-8 text-sm">{i + 1}.</span>
+  <span className="font-semibold text-gray-900 w-28">{item.word}</span>
+  <span className="flex-1 border-b border-gray-400"></span>
+  {item.meaning_count && item.meaning_count > 1 && (
+    <span className="text-gray-500 text-xs w-6 text-right">({item.meaning_count})</span>
+  )}
+</div>                ))}
               </div>
             </div>
 
@@ -254,7 +262,9 @@ function TestPage() {
                   <div key={item.id} className="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-300">
                     <span className="text-gray-400 w-8 text-sm">{i + 1}.</span>
                     <span className="font-semibold text-gray-900 w-28">{item.word}</span>
-                    <span className="flex-1 text-red-600 font-semibold">{item.meaning}</span>
+                    <span className="flex-1 text-red-600 font-semibold text-sm">
+                      {formatMeaning(item)}
+                    </span>
                   </div>
                 ))}
               </div>
