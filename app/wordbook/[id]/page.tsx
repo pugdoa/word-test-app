@@ -53,6 +53,7 @@ export default function WordbookEdit() {
       .select('id, sort_order, word, main_meaning, other_meanings, meaning_count')
       .eq('wordbook_id', wordbookId)
       .order('sort_order', { ascending: true })
+      .range(0, 1999)
     if (data) setWords(data)
     setLoading(false)
   }

@@ -39,6 +39,7 @@ function TestPage() {
         .select('id, sort_order, word, main_meaning, other_meanings, meaning_count')
         .eq('wordbook_id', wordbookId)
         .order('sort_order', { ascending: true })
+        .range(0, 1999)
         .then(({ data }) => {
           if (data) setWords(data)
           setLoading(false)
@@ -230,22 +231,24 @@ function TestPage() {
             {/* 問題用紙 */}
             <div className={`bg-white rounded-lg shadow-sm p-8 ${activeTab !== 'test' ? 'hidden print:block' : ''}`}>
               <div className="flex justify-between items-end border-b-2 border-gray-900 pb-3 mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">{testTitle}</h3>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">{testTitle}</h3>
+                  <p className="text-xs text-gray-500 mt-1">(2)の場合は意味を２つ書くこと</p>
+                </div>
                 <div className="text-right text-sm text-gray-700">
                   <div>日付: {dateInput || '　　　　'}</div>
                   <div>名前: 　　　　　　　得点: 　　/{currentSet.length}</div>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-x-8">
+              </div>              <div className="grid grid-cols-2 gap-x-8">
                 {currentSet.map((item, i) => (
-<div key={item.id} className="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-300">
-  <span className="text-gray-400 w-8 text-sm">{i + 1}.</span>
-  <span className="font-semibold text-gray-900 w-28">{item.word}</span>
-  <span className="flex-1 border-b border-gray-400"></span>
-  {item.meaning_count && item.meaning_count > 1 && (
-    <span className="text-gray-500 text-xs w-6 text-right">({item.meaning_count})</span>
-  )}
-</div>                ))}
+                  <div key={item.id} className="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-300">
+                    <span className="text-gray-400 w-8 text-sm">{i + 1}.</span>
+                    <span className="font-semibold text-gray-900 w-28">{item.word}</span>
+                    <span className="flex-1 border-b border-gray-400"></span>
+                    {item.meaning_count && item.meaning_count > 1 && (
+                      <span className="text-gray-500 text-xs w-6 text-right">({item.meaning_count})</span>
+                    )}
+                  </div>))}
               </div>
             </div>
 
