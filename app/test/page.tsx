@@ -29,6 +29,7 @@ function TestPage() {
   const [currentSet, setCurrentSet] = useState<Word[]>([])
   const [activeTab, setActiveTab] = useState<'test' | 'answer'>('test')
   const [message, setMessage] = useState('')
+  const [rangeLabel, setRangeLabel] = useState('')
 
   useEffect(() => {
     if (!wordbookId) { router.push('/dashboard'); return }
@@ -89,6 +90,11 @@ function TestPage() {
     const ordered = shuffle ? shuffleArray(pool) : [...pool]
     const selected = ordered.slice(0, count)
     setCurrentSet(selected)
+    if (rangeInput.trim()) {
+      setRangeLabel(rangeInput.trim())
+    } else {
+      setRangeLabel(`1-${words.length}`)
+    }
     setActiveTab('test')
 
     let msg = `${selected.length}語のテストを作成しました。`
@@ -232,14 +238,16 @@ function TestPage() {
             <div className={`bg-white rounded-lg shadow-sm p-8 ${activeTab !== 'test' ? 'hidden print:block' : ''}`}>
               <div className="flex justify-between items-end border-b-2 border-gray-900 pb-3 mb-6">
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900">{testTitle}</h3>
-                  <p className="text-xs text-gray-500 mt-1">(2)の場合は意味を２つ書くこと</p>
-                </div>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    {testTitle}{rangeLabel && <span className="text-lg font-normal ml-2">{rangeLabel}</span>}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">(2)の場合は意味を２つ書くこと</p>                </div>
                 <div className="text-right text-sm text-gray-700">
                   <div>日付: {dateInput || '　　　　'}</div>
                   <div>名前: 　　　　　　　得点: 　　/{currentSet.length}</div>
                 </div>
-              </div>              <div className="grid grid-cols-2 gap-x-8">
+              </div>
+              <div className="grid grid-cols-2 gap-x-8">
                 {currentSet.map((item, i) => (
                   <div key={item.id} className="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-300">
                     <span className="text-gray-400 w-8 text-sm">{i + 1}.</span>
@@ -255,7 +263,7 @@ function TestPage() {
             {/* 解答用紙 */}
             <div className={`bg-white rounded-lg shadow-sm p-8 mt-4 print:mt-0 print:page-break-before-always ${activeTab !== 'answer' ? 'hidden print:block' : ''}`}>
               <div className="flex justify-between items-end border-b-2 border-gray-900 pb-3 mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">{testTitle}(解答)</h3>
+                <h3 className="text-2xl font-bold text-gray-900">{testTitle}(解答){rangeLabel && <span className="text-lg font-normal ml-2">{rangeLabel}</span>}</h3>
                 <div className="text-right text-sm text-gray-700">
                   <div>日付: {dateInput || '　　　　'}</div>
                 </div>

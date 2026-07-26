@@ -32,6 +32,8 @@ export default function WordbookEdit() {
   const [bulkCsv, setBulkCsv] = useState('')
   const [bulkSaving, setBulkSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+const itemsPerPage = 100
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -48,15 +50,16 @@ export default function WordbookEdit() {
       .single()
     if (wb) setWordbookName(wb.name)
 
-    const { data } = await supabase
-      .from('words')
-      .select('id, sort_order, word, main_meaning, other_meanings, meaning_count')
-      .eq('wordbook_id', wordbookId)
-      .order('sort_order', { ascending: true })
-      .range(0, 1999)
-    if (data) setWords(data)
-    setLoading(false)
-  }
+const { data, error } = await supabase
+  .from('words')
+  .select('id, sort_order, word, main_meaning, other_meanings, meaning_count')
+  .eq('wordbook_id', wordbookId)
+  .order('sort_order', { ascending: true })
+  .range(0, 1999)
+console.log('取得件数:', data?.length)
+console.log('エラー:', error)
+if (data) setWords(data)
+setLoading(false)  }
 
   const handleEdit = (word: Word) => {
     setEditingId(word.id)
@@ -156,6 +159,11 @@ export default function WordbookEdit() {
     setBulkSaving(false)
   }
 
+  const totalPages = Math.ceil(words.length / itemsPerPage)
+const pagedWords = words.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+if (loading) return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>
+
   if (loading) return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>
 
   return (
@@ -241,6 +249,8 @@ export default function WordbookEdit() {
           </button>
         </div>
 
+        
+
         {/* 単語一覧 */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <table className="w-full text-sm">
@@ -255,7 +265,7 @@ export default function WordbookEdit() {
               </tr>
             </thead>
             <tbody>
-              {words.map((w) => (
+              {pagedWords.map((w) => (
                 <tr key={w.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3 text-gray-400">{w.sort_order}</td>
                   {editingId === w.id ? (
@@ -338,6 +348,30 @@ export default function WordbookEdit() {
             </tbody>
           </table>
         </div>
+        <div className="flex items-center justify-between mt-4">
+  <p className="text-sm text-gray-500">
+    {words.length}語中 {(currentPage - 1) * itemsPerPage + 1}〜{Math.min(currentPage * itemsPerPage, words.length)}件を表示
+  </p>
+  <div className="flex gap-2">
+    <button
+      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+      disabled={currentPage === 1}
+      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm disabled:opacity-50"
+    >
+      前へ
+    </button>
+    <span className="px-4 py-2 text-sm text-gray-700">
+      {currentPage} / {totalPages}ページ
+    </span>
+    <button
+      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+      disabled={currentPage === totalPages}
+      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm disabled:opacity-50"
+    >
+      次へ
+    </button>
+  </div>
+</div>
       </main>
     </div>
   )
