@@ -8,6 +8,7 @@ type Wordbook = {
   name: string
   created_at: string
   word_count?: number
+  user_id: string
 }
 
 export default function Dashboard() {
@@ -20,6 +21,7 @@ export default function Dashboard() {
   const [csvText, setCsvText] = useState('')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [currentUserId, setCurrentUserId] = useState('')
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -34,13 +36,14 @@ export default function Dashboard() {
   }, [router])
 
   const fetchWordbooks = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
     const { data } = await supabase
       .from('wordbooks')
-      .select('id, name, created_at')
+      .select('id, name, created_at, user_id')
       .order('created_at', { ascending: false })
     if (data) setWordbooks(data)
+    setCurrentUserId(user?.id ?? '')
   }
-
   const parseCSV = (text: string) => {
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0)
     const items: { word: string; meaning: string }[] = []
@@ -102,19 +105,19 @@ export default function Dashboard() {
   }
 
   const handleRename = async (id: string, currentName: string) => {
-  const newName = prompt('新しい名前を入力してください', currentName)
-  if (!newName || !newName.trim()) return
-  const { error } = await supabase
-    .from('wordbooks')
-    .update({ name: newName.trim() })
-    .eq('id', id)
-  if (error) {
-    setMessage('名前の変更に失敗しました。')
-  } else {
-    setMessage(`「${newName.trim()}」に変更しました。`)
-    fetchWordbooks()
+    const newName = prompt('新しい名前を入力してください', currentName)
+    if (!newName || !newName.trim()) return
+    const { error } = await supabase
+      .from('wordbooks')
+      .update({ name: newName.trim() })
+      .eq('id', id)
+    if (error) {
+      setMessage('名前の変更に失敗しました。')
+    } else {
+      setMessage(`「${newName.trim()}」に変更しました。`)
+      fetchWordbooks()
+    }
   }
-}
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`「${name}」を削除しますか？`)) return
@@ -211,29 +214,33 @@ export default function Dashboard() {
                 </div>
 <div className="flex gap-2">
   <button
-  onClick={() => router.push(`/wordbook/${wb.id}`)}
-  className="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg text-sm"
->
-  編集
-</button>
-  <button
     onClick={() => router.push(`/test?wordbookId=${wb.id}&wordbookName=${encodeURIComponent(wb.name)}`)}
     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold"
   >
     テストを作成
   </button>
-  <button
-    onClick={() => handleRename(wb.id, wb.name)}
-    className="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-4 py-2 rounded-lg text-sm"
-  >
-    名前変更
-  </button>
-  <button
-    onClick={() => handleDelete(wb.id, wb.name)}
-    className="bg-red-100 hover:bg-red-200 text-red-600 px-4 py-2 rounded-lg text-sm"
-  >
-    削除
-  </button>
+  {currentUserId === wb.user_id && (
+    <>
+      <button
+        onClick={() => router.push(`/wordbook/${wb.id}`)}
+        className="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg text-sm"
+      >
+        編集
+      </button>
+      <button
+        onClick={() => handleRename(wb.id, wb.name)}
+        className="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-4 py-2 rounded-lg text-sm"
+      >
+        名前変更
+      </button>
+      <button
+        onClick={() => handleDelete(wb.id, wb.name)}
+        className="bg-red-100 hover:bg-red-200 text-red-600 px-4 py-2 rounded-lg text-sm"
+      >
+        削除
+      </button>
+    </>
+  )}
 </div>              </div>
             ))}
           </div>
