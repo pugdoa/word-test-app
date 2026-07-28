@@ -261,8 +261,7 @@ function TestPage() {
             </div>
 
             {/* 解答用紙 */}
-            <div className={`bg-white rounded-lg shadow-sm p-8 mt-4 print:mt-0 print:page-break-before-always ${activeTab !== 'answer' ? 'hidden print:block' : ''}`}>
-              <div className="flex justify-between items-end border-b-2 border-gray-900 pb-3 mb-6">
+            <div id="sheetAnswer" className={`bg-white rounded-lg shadow-sm p-8 mt-4 print:mt-0 print:page-break-before-always ${activeTab !== 'answer' ? 'hidden print:block' : ''}`}>              <div className="flex justify-between items-end border-b-2 border-gray-900 pb-3 mb-6">
                 <h3 className="text-2xl font-bold text-gray-900">{testTitle}(解答){rangeLabel && <span className="text-lg font-normal ml-2">{rangeLabel}</span>}</h3>
                 <div className="text-right text-sm text-gray-700">
                   <div>日付: {dateInput || '　　　　'}</div>

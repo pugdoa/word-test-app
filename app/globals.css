@@ -115,4 +115,26 @@ body {
 .grid.grid-cols-2 .font-semibold {
   font-family: "Century", "Georgia", "Times New Roman", serif !important;
 }
+/* 解答用紙専用スタイル */
+#sheetAnswer .grid.grid-cols-2 {
+  gap: 0 4mm !important;
+}
+
+#sheetAnswer .flex.items-baseline {
+  padding: 0.8mm 0 !important;
+  font-size: 7pt !important;
+}
+
+#sheetAnswer .w-28 {
+  width: 16mm !important;
+  font-size: 7pt !important;
+}
+
+#sheetAnswer .flex-1 {
+  font-size: 7pt !important;
+}
+
+#sheetAnswer .w-8 {
+  font-size: 7pt !important;
+}
 }
