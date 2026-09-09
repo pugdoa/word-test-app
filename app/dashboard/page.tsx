@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { parseWordCsv } from '@/lib/parseWordCsv'
 
 type Wordbook = {
   id: string
@@ -23,6 +24,16 @@ export default function Dashboard() {
   const [message, setMessage] = useState('')
   const [currentUserId, setCurrentUserId] = useState('')
 
+  const fetchWordbooks = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data } = await supabase
+      .from('wordbooks')
+      .select('id, name, created_at, user_id')
+      .order('created_at', { ascending: false })
+    if (data) setWordbooks(data)
+    setCurrentUserId(user?.id ?? '')
+  }
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
@@ -35,34 +46,11 @@ export default function Dashboard() {
     })
   }, [router])
 
-  const fetchWordbooks = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    const { data } = await supabase
-      .from('wordbooks')
-      .select('id, name, created_at, user_id')
-      .order('created_at', { ascending: false })
-    if (data) setWordbooks(data)
-    setCurrentUserId(user?.id ?? '')
-  }
-  const parseCSV = (text: string) => {
-    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0)
-    const items: { word: string; meaning: string }[] = []
-    for (const line of lines) {
-      const sep = line.includes('\t') ? '\t' : ','
-      const parts = line.split(sep)
-      if (parts.length < 2) continue
-      const word = parts[0].trim()
-      const meaning = parts.slice(1).join(sep).trim()
-      if (word && meaning) items.push({ word, meaning })
-    }
-    return items
-  }
-
   const handleSave = async () => {
     if (!newName.trim()) { setMessage('単語帳の名前を入力してください。'); return }
     if (!csvText.trim()) { setMessage('単語データを入力してください。'); return }
-    const words = parseCSV(csvText)
-    if (words.length === 0) { setMessage('単語を読み取れませんでした。「単語,意味」の形式か確認してください。'); return }
+    const words = parseWordCsv(csvText)
+    if (words.length === 0) { setMessage('単語を読み取れませんでした。「単語,重要な意味」の形式か確認してください。'); return }
 
     setSaving(true)
     setMessage('')
@@ -77,7 +65,7 @@ export default function Dashboard() {
       .single()
 
     if (error || !wordbook) {
-      setMessage('保存に失敗しました。')
+      setMessage(`保存に失敗しました。(${error?.message ?? '原因不明'})`)
       setSaving(false)
       return
     }
@@ -86,12 +74,16 @@ export default function Dashboard() {
       wordbook_id: wordbook.id,
       sort_order: i + 1,
       word: w.word,
-      meaning: w.meaning,
+      main_meaning: w.main_meaning,
+      other_meanings: w.other_meanings,
+      meaning_count: w.meaning_count,
     }))
 
     const { error: wordsError } = await supabase.from('words').insert(wordsToInsert)
     if (wordsError) {
-      setMessage('単語の保存に失敗しました。')
+      // 単語が入らなかった空の単語帳が残らないように取り消す
+      await supabase.from('wordbooks').delete().eq('id', wordbook.id)
+      setMessage(`単語の保存に失敗しました。(${wordsError.message})`)
       setSaving(false)
       return
     }
@@ -178,12 +170,15 @@ export default function Dashboard() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  単語データ(「単語,意味」を1行ずつ)
+                  単語データ(「単語,重要な意味,その他の意味,意味の数」を1行ずつ)
                 </label>
+                <p className="text-xs text-gray-500 mb-1">
+                  その他の意味・意味の数は省略できます。
+                </p>
                 <textarea
                   value={csvText}
                   onChange={(e) => setCsvText(e.target.value)}
-                  placeholder="apple,りんご&#10;run,走る&#10;beautiful,美しい"
+                  placeholder={`abandon,捨てる,見捨てる・断念する,3\nbrilliant,輝かしい,,1\nrun,走る`}
                   className="w-full border rounded-lg px-4 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 h-48 font-mono text-sm"
                 />
               </div>

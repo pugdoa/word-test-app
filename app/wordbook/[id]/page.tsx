@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { parseWordCsv } from '@/lib/parseWordCsv'
 
 type Word = {
   id: string
@@ -35,13 +36,6 @@ export default function WordbookEdit() {
   const [currentPage, setCurrentPage] = useState(1)
 const itemsPerPage = 100
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { router.push('/'); return }
-      fetchWords()
-    })
-  }, [wordbookId])
-
   const fetchWords = async () => {
     const { data: wb } = await supabase
       .from('wordbooks')
@@ -56,10 +50,16 @@ const { data, error } = await supabase
   .eq('wordbook_id', wordbookId)
   .order('sort_order', { ascending: true })
   .range(0, 1999)
-console.log('取得件数:', data?.length)
-console.log('エラー:', error)
+if (error) setMessage(`単語の読み込みに失敗しました。(${error.message})`)
 if (data) setWords(data)
 setLoading(false)  }
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push('/'); return }
+      fetchWords()
+    })
+  }, [wordbookId])
 
   const handleEdit = (word: Word) => {
     setEditingId(word.id)
@@ -123,18 +123,7 @@ setLoading(false)  }
 
   const handleBulkAdd = async () => {
     if (!bulkCsv.trim()) { setMessage('単語データを入力してください。'); return }
-    const lines = bulkCsv.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0)
-    const items: { word: string; main_meaning: string; other_meanings: string | null; meaning_count: number | null }[] = []
-    for (const line of lines) {
-      const sep = line.includes('\t') ? '\t' : ','
-      const parts = line.split(sep)
-      if (parts.length < 2) continue
-      const word = parts[0].trim()
-      const main_meaning = parts[1].trim()
-      const other_meanings = parts[2]?.trim() || null
-      const meaning_count = parts[3]?.trim() ? parseInt(parts[3].trim()) : null
-      if (word && main_meaning) items.push({ word, main_meaning, other_meanings, meaning_count })
-    }
+    const items = parseWordCsv(bulkCsv)
     if (items.length === 0) { setMessage('単語を読み取れませんでした。'); return }
 
     setBulkSaving(true)
@@ -163,8 +152,6 @@ setLoading(false)  }
 const pagedWords = words.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
 if (loading) return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>
 
   return (
     <div className="min-h-screen bg-gray-50">
