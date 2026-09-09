@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { parseWordCsv } from '@/lib/parseWordCsv'
+import CsvImportField from '@/components/CsvImportField'
 
 type Word = {
   id: string
@@ -123,7 +124,7 @@ setLoading(false)  }
 
   const handleBulkAdd = async () => {
     if (!bulkCsv.trim()) { setMessage('単語データを入力してください。'); return }
-    const items = parseWordCsv(bulkCsv)
+    const { items, skipped } = parseWordCsv(bulkCsv)
     if (items.length === 0) { setMessage('単語を読み取れませんでした。'); return }
 
     setBulkSaving(true)
@@ -142,7 +143,10 @@ setLoading(false)  }
       setMessage('一括追加に失敗しました。')
     } else {
       setBulkCsv('')
-      setMessage(`${items.length}語を一括追加しました！`)
+      setMessage(
+        `${items.length}語を一括追加しました！` +
+          (skipped.length > 0 ? ` ※形式が合わない${skipped.length}行は取り込みませんでした` : '')
+      )
       fetchWords()
     }
     setBulkSaving(false)
@@ -219,14 +223,11 @@ if (loading) return <div className="min-h-screen flex items-center justify-cente
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h3 className="font-bold text-gray-900 mb-2">CSVで一括追加</h3>
           <p className="text-xs text-gray-500 mb-3">
-            「単語,重要な意味,その他の意味,意味の数」を1行ずつ貼り付けてください。その他の意味・意味の数は省略可能です。
+            「単語,重要な意味,その他の意味,意味の数」の形式です。CSVファイルを読み込むか、下の欄に直接貼り付けてください。その他の意味・意味の数は省略可能です。
           </p>
-          <textarea
-            value={bulkCsv}
-            onChange={(e) => setBulkCsv(e.target.value)}
-            placeholder={`abandon,捨てる,見捨てる・断念する,3\nbrilliant,輝かしい,,1`}
-            className="w-full border rounded-lg px-4 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 h-48 font-mono text-sm mb-3"
-          />
+          <div className="mb-3">
+            <CsvImportField value={bulkCsv} onChange={setBulkCsv} />
+          </div>
           <button
             onClick={handleBulkAdd}
             disabled={bulkSaving}

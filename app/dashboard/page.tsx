@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { parseWordCsv } from '@/lib/parseWordCsv'
+import CsvImportField from '@/components/CsvImportField'
 
 type Wordbook = {
   id: string
@@ -49,7 +50,7 @@ export default function Dashboard() {
   const handleSave = async () => {
     if (!newName.trim()) { setMessage('単語帳の名前を入力してください。'); return }
     if (!csvText.trim()) { setMessage('単語データを入力してください。'); return }
-    const words = parseWordCsv(csvText)
+    const { items: words, skipped } = parseWordCsv(csvText)
     if (words.length === 0) { setMessage('単語を読み取れませんでした。「単語,重要な意味」の形式か確認してください。'); return }
 
     setSaving(true)
@@ -88,7 +89,10 @@ export default function Dashboard() {
       return
     }
 
-    setMessage(`「${newName}」を保存しました(${words.length}語)`)
+    setMessage(
+      `「${newName}」を保存しました(${words.length}語)` +
+        (skipped.length > 0 ? ` ※形式が合わない${skipped.length}行は取り込みませんでした` : '')
+    )
     setNewName('')
     setCsvText('')
     setShowForm(false)
@@ -172,15 +176,10 @@ export default function Dashboard() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   単語データ(「単語,重要な意味,その他の意味,意味の数」を1行ずつ)
                 </label>
-                <p className="text-xs text-gray-500 mb-1">
-                  その他の意味・意味の数は省略できます。
+                <p className="text-xs text-gray-500 mb-2">
+                  CSVファイルを読み込むか、下の欄に直接貼り付けてください。その他の意味・意味の数は省略できます。
                 </p>
-                <textarea
-                  value={csvText}
-                  onChange={(e) => setCsvText(e.target.value)}
-                  placeholder={`abandon,捨てる,見捨てる・断念する,3\nbrilliant,輝かしい,,1\nrun,走る`}
-                  className="w-full border rounded-lg px-4 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 h-48 font-mono text-sm"
-                />
+                <CsvImportField value={csvText} onChange={setCsvText} />
               </div>
               <button
                 onClick={handleSave}
