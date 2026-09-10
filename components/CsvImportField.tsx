@@ -2,6 +2,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { parseWordCsv } from '@/lib/parseWordCsv'
 import { readTextFile, type DetectedEncoding } from '@/lib/readTextFile'
+import { downloadTemplateCsv } from '@/lib/csvTemplate'
 
 type Props = {
   /** 取り込み対象のテキスト(貼り付け・ファイル読み込みの両方でここに入る) */
@@ -79,6 +80,33 @@ export default function CsvImportField({ value, onChange, heightClass = 'h-48' }
         </p>
         <p className="text-xs text-gray-400 mt-1">
           Excelの「CSV UTF-8」「CSV(コンマ区切り)」どちらでも読み込めます
+        </p>
+      </div>
+
+      {/* 書き方の案内 */}
+      <div className="mb-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <p className="text-xs font-semibold text-gray-700">
+            列は4列です。意味が増えても列は増えません。
+          </p>
+          <button
+            type="button"
+            onClick={() => downloadTemplateCsv()}
+            className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-semibold"
+          >
+            ⬇ フォーマットをダウンロード
+          </button>
+        </div>
+        <ol className="text-xs text-gray-600 space-y-0.5 list-decimal list-inside">
+          <li>単語</li>
+          <li>重要な意味（1つ目だけ）</li>
+          <li>その他の意味（2つ目以降をまとめて書く・省略可）</li>
+          <li>意味の数（省略可）</li>
+        </ol>
+        <p className="text-xs text-gray-500 mt-2 font-mono">abandon,を捨てる,を断念する / を見捨てる,3</p>
+        <p className="text-xs text-gray-400 mt-1">
+          意味にカンマを含むときは、その項目を &quot;
+          &quot; で囲んでください。1行目の見出しは自動で読み飛ばします。
         </p>
       </div>
 
