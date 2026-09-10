@@ -4,15 +4,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { parseWordCsv } from '@/lib/parseWordCsv'
 import CsvImportField from '@/components/CsvImportField'
-
-type Word = {
-  id: string
-  sort_order: number
-  word: string
-  main_meaning: string
-  other_meanings: string | null
-  meaning_count: number | null
-}
+import { fetchAllWords, type Word } from '@/lib/fetchAllWords'
 
 export default function WordbookEdit() {
   const router = useRouter()
@@ -45,15 +37,11 @@ const itemsPerPage = 100
       .single()
     if (wb) setWordbookName(wb.name)
 
-const { data, error } = await supabase
-  .from('words')
-  .select('id, sort_order, word, main_meaning, other_meanings, meaning_count')
-  .eq('wordbook_id', wordbookId)
-  .order('sort_order', { ascending: true })
-  .range(0, 1999)
-if (error) setMessage(`単語の読み込みに失敗しました。(${error.message})`)
-if (data) setWords(data)
-setLoading(false)  }
+    const { words, error } = await fetchAllWords(wordbookId)
+    if (error) setMessage(`単語の読み込みに失敗しました。(${error})`)
+    setWords(words)
+    setLoading(false)
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {

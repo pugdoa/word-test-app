@@ -2,16 +2,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { fetchAllWords, type Word } from '@/lib/fetchAllWords'
 import { Suspense } from 'react'
-
-type Word = {
-  id: string
-  sort_order: number
-  word: string
-  main_meaning: string
-  other_meanings: string | null
-  meaning_count: number | null
-}
 
 function TestPage() {
   const router = useRouter()
@@ -33,18 +25,12 @@ function TestPage() {
 
   useEffect(() => {
     if (!wordbookId) { router.push('/dashboard'); return }
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/'); return }
-      supabase
-        .from('words')
-        .select('id, sort_order, word, main_meaning, other_meanings, meaning_count')
-        .eq('wordbook_id', wordbookId)
-        .order('sort_order', { ascending: true })
-        .range(0, 1999)
-        .then(({ data }) => {
-          if (data) setWords(data)
-          setLoading(false)
-        })
+      const { words, error } = await fetchAllWords(wordbookId)
+      if (error) setMessage(`単語の読み込みに失敗しました。(${error})`)
+      setWords(words)
+      setLoading(false)
     })
   }, [wordbookId, router])
 
