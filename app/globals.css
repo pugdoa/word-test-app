@@ -115,6 +115,15 @@ body {
 .grid.grid-cols-2 .font-semibold {
   font-family: "Century", "Georgia", "Times New Roman", serif !important;
 }
+
+/* 問題用紙専用スタイル
+   意味を複数書けるよう、単語の下に記入スペースを確保する。
+   行の高さは意味の数によらず一律。
+   下余白は4.5mmを超えると50語がA4 1ページに収まらなくなるため4mmとしている。 */
+#sheetTest .grid.grid-cols-2 > div {
+  padding: 1mm 0 4mm 0 !important;
+}
+
 /* 解答用紙専用スタイル */
 #sheetAnswer .grid.grid-cols-2 {
   gap: 0 4mm !important;
