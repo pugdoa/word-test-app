@@ -124,26 +124,28 @@ body {
   padding: 1mm 0 4mm 0 !important;
 }
 
-/* 解答用紙専用スタイル */
+/* 解答用紙専用スタイル
+   採点時の読みやすさを優先し、2列のまま問題用紙と同じ8.5ptにする。
+   1枚に収める必要はないため、語数に応じて複数ページに分かれてよい。 */
 #sheetAnswer .grid.grid-cols-2 {
-  gap: 0 4mm !important;
+  gap: 0 6mm !important;
 }
 
 #sheetAnswer .flex.items-baseline {
-  padding: 0.8mm 0 !important;
-  font-size: 7pt !important;
+  padding: 2mm 0 !important;
+  font-size: 8.5pt !important;
 }
 
 #sheetAnswer .w-28 {
-  width: 16mm !important;
-  font-size: 7pt !important;
+  width: 22mm !important;
+  font-size: 8.5pt !important;
 }
 
 #sheetAnswer .flex-1 {
-  font-size: 7pt !important;
+  font-size: 8.5pt !important;
 }
 
 #sheetAnswer .w-8 {
-  font-size: 7pt !important;
+  font-size: 8.5pt !important;
 }
 }
