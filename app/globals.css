@@ -24,6 +24,12 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* 単語・熟語のフォント(画面表示) */
+.grid.grid-cols-2 .font-medium,
+.grid.grid-cols-2 .font-semibold {
+  font-family: var(--font-word), "Verdana", "Helvetica Neue", sans-serif;
+}
+
 /* 熟語のように見出しが長い単語帳向け(画面表示) */
 .sheet-longform .w-28 {
   width: 11rem;
@@ -115,10 +121,12 @@ body {
   .text-right.text-sm {
     font-size: 8pt !important;
   }
-  /* 印刷時のフォント指定 */
+  /* 単語・熟語のフォント指定
+     next/font で同梱しているため環境によらず同じ字形になる。
+     以前は "Century" 指定だったが Mac には無く、Georgia で印刷されていた。 */
 .grid.grid-cols-2 .font-medium,
 .grid.grid-cols-2 .font-semibold {
-  font-family: "Century", "Georgia", "Times New Roman", serif !important;
+  font-family: var(--font-word), "Verdana", "Helvetica Neue", sans-serif !important;
 }
 
 /* 問題用紙専用スタイル
@@ -155,13 +163,22 @@ body {
 }
 
 /* 熟語のように見出しが長い単語帳向け
-   見出し欄が狭いと折り返して行が高くなり、問題用紙がA4 1枚に収まらない。
-   欄を広げるのが最も効き、文字を小さくしてもほとんど効果がない。
-   解答用紙は欄を広げても1枚に収まらないため、あわせて文字も小さくする。 */
+   見出し欄が狭いと折り返して行が高くなり、A4 1枚に収まらない。
+   出題はシャッフルされるため、長い熟語ばかり引かれても収まるよう
+   「最も長い50語」を最悪ケースとして寸法を決めている。
+   欄幅・文字サイズ・行間の3つを同時に詰めないと最悪ケースには耐えない。 */
 #sheetTest.sheet-longform .w-28 {
-  width: 35mm !important;
+  width: 45mm !important;
 }
 
+#sheetTest.sheet-longform .grid.grid-cols-2 > div {
+  font-size: 7.5pt !important;
+  padding: 1mm 0 3mm 0 !important;
+}
+
+/* 解答用紙は記入欄が不要なぶん見出し欄を広げずに済む。
+   欄を広げると意味が折り返して逆に2枚になるため35mmのままにし、
+   文字と行間を詰めて1枚に収める。 */
 #sheetAnswer.sheet-longform .w-28 {
   width: 35mm !important;
   font-size: 7pt !important;
@@ -169,6 +186,7 @@ body {
 
 #sheetAnswer.sheet-longform .flex.items-baseline {
   font-size: 7pt !important;
+  padding: 0.8mm 0 !important;
 }
 
 #sheetAnswer.sheet-longform .flex-1 {
