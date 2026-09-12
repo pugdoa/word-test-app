@@ -24,6 +24,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* 熟語のように見出しが長い単語帳向け(画面表示) */
+.sheet-longform .w-28 {
+  width: 11rem;
+}
+
 @media print {
   .print\:hidden { display: none !important; }
   .print\:block { display: block !important; }
@@ -147,5 +152,30 @@ body {
 
 #sheetAnswer .w-8 {
   font-size: 8.5pt !important;
+}
+
+/* 熟語のように見出しが長い単語帳向け
+   見出し欄が狭いと折り返して行が高くなり、問題用紙がA4 1枚に収まらない。
+   欄を広げるのが最も効き、文字を小さくしてもほとんど効果がない。
+   解答用紙は欄を広げても1枚に収まらないため、あわせて文字も小さくする。 */
+#sheetTest.sheet-longform .w-28 {
+  width: 35mm !important;
+}
+
+#sheetAnswer.sheet-longform .w-28 {
+  width: 35mm !important;
+  font-size: 7pt !important;
+}
+
+#sheetAnswer.sheet-longform .flex.items-baseline {
+  font-size: 7pt !important;
+}
+
+#sheetAnswer.sheet-longform .flex-1 {
+  font-size: 7pt !important;
+}
+
+#sheetAnswer.sheet-longform .w-8 {
+  font-size: 7pt !important;
 }
 }

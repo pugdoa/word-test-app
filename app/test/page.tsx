@@ -1,9 +1,12 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { fetchAllWords, type Word } from '@/lib/fetchAllWords'
 import { Suspense } from 'react'
+
+/** この文字数を超える見出しがあれば熟語向けレイアウトにする */
+const LONG_FORM_THRESHOLD = 18
 
 function TestPage() {
   const router = useRouter()
@@ -33,6 +36,17 @@ function TestPage() {
       setLoading(false)
     })
   }, [wordbookId, router])
+
+  /**
+   * 熟語のように見出しが長い単語帳かどうか。
+   * 単語欄が狭いと折り返して行が高くなり、A4 1枚に収まらなくなるため、
+   * 出題範囲ではなく単語帳全体で判定して、同じ単語帳なら常に同じ体裁にする。
+   */
+  const longestWordLength = useMemo(
+    () => words.reduce((max, w) => Math.max(max, w.word.length), 0),
+    [words]
+  )
+  const isLongForm = longestWordLength > LONG_FORM_THRESHOLD
 
   const parseRanges = (str: string, maxId: number): Set<number> => {
     const idSet = new Set<number>()
@@ -185,6 +199,12 @@ function TestPage() {
               </button>
             )}
           </div>
+          {isLongForm && (
+            <p className="mt-3 text-xs text-gray-500">
+              見出しが長いため（最長{longestWordLength}字）、熟語向けのレイアウトで印刷します。
+              見出し欄を広げ、解答用紙の文字を小さくします。
+            </p>
+          )}
           {message && (
             <p className="mt-3 text-sm text-blue-600">{message}</p>
           )}
@@ -221,7 +241,7 @@ function TestPage() {
             </div>
 
             {/* 問題用紙 */}
-            <div id="sheetTest" className={`bg-white rounded-lg shadow-sm p-8 ${activeTab !== 'test' ? 'hidden print:block' : ''}`}>
+            <div id="sheetTest" className={`bg-white rounded-lg shadow-sm p-8 ${isLongForm ? 'sheet-longform' : ''} ${activeTab !== 'test' ? 'hidden print:block' : ''}`}>
               <div className="flex justify-between items-end border-b-2 border-gray-900 pb-3 mb-6">
                 <div>
                   <h3 className="text-2xl font-bold text-gray-900">
@@ -247,7 +267,7 @@ function TestPage() {
             </div>
 
             {/* 解答用紙 */}
-            <div id="sheetAnswer" className={`bg-white rounded-lg shadow-sm p-8 mt-4 print:mt-0 print:page-break-before-always ${activeTab !== 'answer' ? 'hidden print:block' : ''}`}>              <div className="flex justify-between items-end border-b-2 border-gray-900 pb-3 mb-6">
+            <div id="sheetAnswer" className={`bg-white rounded-lg shadow-sm p-8 mt-4 print:mt-0 print:page-break-before-always ${isLongForm ? 'sheet-longform' : ''} ${activeTab !== 'answer' ? 'hidden print:block' : ''}`}>              <div className="flex justify-between items-end border-b-2 border-gray-900 pb-3 mb-6">
                 <h3 className="text-2xl font-bold text-gray-900">{testTitle}(解答){rangeLabel && <span className="text-lg font-normal ml-2">{rangeLabel}</span>}</h3>
                 <div className="text-right text-sm text-gray-700">
                   <div>日付: {dateInput || '　　　　'}</div>
