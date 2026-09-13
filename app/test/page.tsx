@@ -257,7 +257,7 @@ function TestPage() {
                 {currentSet.map((item, i) => (
                   <div key={item.id} className="flex items-baseline gap-2 pt-1 pb-6 border-b border-dotted border-gray-300">
                     <span className="text-gray-400 w-8 text-sm">{i + 1}.</span>
-                    <span className="font-semibold text-gray-900 w-28">{item.word}</span>
+                    <span className="font-normal text-gray-900 w-28">{item.word}</span>
                     <span className="flex-1"></span>
                     {item.meaning_count && item.meaning_count > 1 && (
                       <span className="text-gray-500 text-xs w-6 text-right">({item.meaning_count})</span>
@@ -277,8 +277,8 @@ function TestPage() {
                 {currentSet.map((item, i) => (
                   <div key={item.id} className="flex items-baseline gap-2 py-2 border-b border-dotted border-gray-300">
                     <span className="text-gray-400 w-8 text-sm">{i + 1}.</span>
-                    <span className="font-semibold text-gray-900 w-28">{item.word}</span>
-                    <span className="flex-1 text-red-600 font-semibold text-sm">
+                    <span className="font-normal text-gray-900 w-28">{item.word}</span>
+                    <span className="flex-1 text-red-600 font-normal text-sm">
                       {formatMeaning(item)}
                     </span>
                   </div>

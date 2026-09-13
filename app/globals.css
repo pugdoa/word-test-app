@@ -24,9 +24,13 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-/* 単語・熟語のフォント(画面表示) */
-.grid.grid-cols-2 .font-medium,
-.grid.grid-cols-2 .font-semibold {
+/* 問題用紙・解答用紙のフォント
+   next/font で同梱しているため環境によらず同じ字形になる。
+   日本語はこのフォントに含まれないので、自動的に次のフォントへ落ちる。
+   以前は .font-semibold に紐づけていたが、太さを変えると指定が外れるため
+   用紙の行そのものを対象にしている。 */
+#sheetTest .grid.grid-cols-2,
+#sheetAnswer .grid.grid-cols-2 {
   font-family: var(--font-word), "Verdana", "Helvetica Neue", sans-serif;
 }
 
@@ -121,14 +125,6 @@ body {
   .text-right.text-sm {
     font-size: 8pt !important;
   }
-  /* 単語・熟語のフォント指定
-     next/font で同梱しているため環境によらず同じ字形になる。
-     以前は "Century" 指定だったが Mac には無く、Georgia で印刷されていた。 */
-.grid.grid-cols-2 .font-medium,
-.grid.grid-cols-2 .font-semibold {
-  font-family: var(--font-word), "Verdana", "Helvetica Neue", sans-serif !important;
-}
-
 /* 問題用紙専用スタイル
    意味を複数書けるよう、単語の下に記入スペースを確保する。
    行の高さは意味の数によらず一律。
