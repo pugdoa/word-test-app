@@ -1,3 +1,5 @@
+import { buildCsv, downloadCsv } from '@/lib/csv'
+
 /**
  * 取り込み用CSVの雛形。
  * 列は常に4列で、意味が増えても列は増えない。
@@ -13,30 +15,10 @@ export const TEMPLATE_ROWS: string[][] = [
   ['charge', 'を請求する', 'を告発する / 充電する / 突撃する / 料金, 手数料', '5'],
 ]
 
-/** CSVの1項目をエスケープする(カンマ・改行・引用符を含む場合は " で囲む) */
-function toCsvField(value: string): string {
-  return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value
-}
-
 export function buildTemplateCsv(): string {
-  const lines = [TEMPLATE_HEADER as readonly string[], ...TEMPLATE_ROWS]
-  return lines.map(row => row.map(toCsvField).join(',')).join('\r\n') + '\r\n'
+  return buildCsv([TEMPLATE_HEADER, ...TEMPLATE_ROWS])
 }
 
-/**
- * 雛形CSVをダウンロードさせる。
- * Excel で開いたときに文字化けしないよう UTF-8 の BOM を付ける。
- */
 export function downloadTemplateCsv(fileName = '単語帳フォーマット.csv') {
-  const blob = new Blob(['﻿' + buildTemplateCsv()], {
-    type: 'text/csv;charset=utf-8',
-  })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = fileName
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  URL.revokeObjectURL(url)
+  downloadCsv(fileName, buildTemplateCsv())
 }

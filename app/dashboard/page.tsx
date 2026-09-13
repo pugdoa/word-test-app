@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { parseWordCsv } from '@/lib/parseWordCsv'
 import CsvImportField from '@/components/CsvImportField'
+import { fetchAllWords } from '@/lib/fetchAllWords'
+import { downloadWordbookCsv, downloadAllWordbooksCsv } from '@/lib/exportWordsCsv'
 
 type Wordbook = {
   id: string
@@ -24,6 +26,7 @@ export default function Dashboard() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [currentUserId, setCurrentUserId] = useState('')
+  const [downloading, setDownloading] = useState('')
 
   const fetchWordbooks = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -121,6 +124,33 @@ export default function Dashboard() {
     fetchWordbooks()
   }
 
+  const handleDownloadOne = async (id: string, name: string) => {
+    setDownloading(id)
+    setMessage('')
+    const { words, error } = await fetchAllWords(id)
+    if (error) {
+      setMessage(`単語の取得に失敗しました。(${error})`)
+    } else if (words.length === 0) {
+      setMessage(`「${name}」には単語がありません。`)
+    } else {
+      downloadWordbookCsv(name, words)
+      setMessage(`「${name}」を${words.length}語ダウンロードしました。`)
+    }
+    setDownloading('')
+  }
+
+  const handleDownloadAll = async () => {
+    setDownloading('all')
+    setMessage('')
+    try {
+      const { wordbooks: n, words: total } = await downloadAllWordbooksCsv()
+      setMessage(`全${n}冊・${total}語をダウンロードしました。`)
+    } catch (e) {
+      setMessage(`ダウンロードに失敗しました。(${e instanceof Error ? e.message : String(e)})`)
+    }
+    setDownloading('')
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
@@ -146,12 +176,21 @@ export default function Dashboard() {
       <main className="max-w-4xl mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-bold text-gray-900">単語帳一覧</h2>
+          <div className="flex gap-2">
+          <button
+            onClick={handleDownloadAll}
+            disabled={downloading !== '' || wordbooks.length === 0}
+            className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
+          >
+            {downloading === 'all' ? '書き出し中...' : '⬇ 全単語帳をCSVで保存'}
+          </button>
           <button
             onClick={() => { setShowForm(!showForm); setMessage('') }}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold"
           >
             {showForm ? 'キャンセル' : '＋ 新しい単語帳を追加'}
           </button>
+          </div>
         </div>
 
         {message && (
@@ -212,6 +251,13 @@ export default function Dashboard() {
     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold"
   >
     テストを作成
+  </button>
+  <button
+    onClick={() => handleDownloadOne(wb.id, wb.name)}
+    disabled={downloading !== ''}
+    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm disabled:opacity-50"
+  >
+    {downloading === wb.id ? '書き出し中...' : 'CSV'}
   </button>
   {currentUserId === wb.user_id && (
     <>

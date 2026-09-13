@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { parseWordCsv } from '@/lib/parseWordCsv'
 import CsvImportField from '@/components/CsvImportField'
 import { fetchAllWords, type Word } from '@/lib/fetchAllWords'
+import { downloadWordbookCsv } from '@/lib/exportWordsCsv'
 
 export default function WordbookEdit() {
   const router = useRouter()
@@ -158,9 +159,18 @@ if (loading) return <div className="min-h-screen flex items-center justify-cente
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
-        <h2 className="text-lg font-bold text-gray-900 mb-6">
-          {wordbookName}({words.length}語)
-        </h2>
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
+          <h2 className="text-lg font-bold text-gray-900">
+            {wordbookName}({words.length}語)
+          </h2>
+          <button
+            onClick={() => downloadWordbookCsv(wordbookName, words)}
+            disabled={words.length === 0}
+            className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
+          >
+            ⬇ CSVでダウンロード({words.length}語)
+          </button>
+        </div>
 
         {message && (
           <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm">{message}</div>
