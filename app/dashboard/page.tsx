@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { parseWordCsv } from '@/lib/parseWordCsv'
 import CsvImportField from '@/components/CsvImportField'
+import ChangelogList from '@/components/ChangelogList'
 import { fetchAllWords } from '@/lib/fetchAllWords'
 import { downloadWordbookCsv, downloadAllWordbooksCsv } from '@/lib/exportWordsCsv'
 
@@ -285,6 +286,8 @@ export default function Dashboard() {
             ))}
           </div>
         )}
+
+        <ChangelogList />
       </main>
     </div>
   )
